@@ -12,6 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.media.tv.TvInputManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.text.SpannableString;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.text.style.RelativeSizeSpan;
 import android.view.Gravity;
@@ -63,6 +65,9 @@ public final class Home extends Activity {
     private View shade;
     private View tint;
     private TextView clock, date;
+    private TextView heroEyebrow, heroTitle, heroHint;
+    private ImageView heroArtwork;
+    private View heroAccent;
     private Row apps, inputs;
     private Tile moving;
     private String wallKey;
@@ -478,6 +483,46 @@ public final class Home extends Activity {
         head.addView(chip("Ajustes", v -> openSettings()));
         column.addView(head, new LinearLayout.LayoutParams(MATCH, WRAP));
 
+        LinearLayout hero = new LinearLayout(this);
+        hero.setGravity(Gravity.CENTER_VERTICAL);
+        hero.setPadding(dp(24), dp(18), dp(24), dp(18));
+        hero.setBackground(Ui.round(0xD91A1C22, dp(18)));
+        View accent = new View(this);
+        accent.setBackground(Ui.round(cfg.accent(), dp(3)));
+        heroAccent = accent;
+        LinearLayout.LayoutParams accentLp = new LinearLayout.LayoutParams(dp(4), MATCH);
+        accentLp.rightMargin = dp(20);
+        hero.addView(accent, accentLp);
+
+        LinearLayout heroCopy = new LinearLayout(this);
+        heroCopy.setOrientation(LinearLayout.VERTICAL);
+        heroEyebrow = Ui.text(this, 12, Ui.MUTED, Ui.MEDIUM);
+        heroEyebrow.setLetterSpacing(0.12f);
+        heroTitle = Ui.text(this, 28, Ui.TEXT, Ui.LIGHT);
+        heroTitle.setMaxLines(2);
+        heroTitle.setEllipsize(TextUtils.TruncateAt.END);
+        heroHint = Ui.text(this, 14, Ui.MUTED, Ui.MEDIUM);
+        LinearLayout.LayoutParams titleLp = new LinearLayout.LayoutParams(MATCH, WRAP);
+        titleLp.topMargin = dp(8);
+        heroCopy.addView(heroEyebrow);
+        heroCopy.addView(heroTitle, titleLp);
+        LinearLayout.LayoutParams hintLp = new LinearLayout.LayoutParams(MATCH, WRAP);
+        hintLp.topMargin = dp(8);
+        heroCopy.addView(heroHint, hintLp);
+        hero.addView(heroCopy, new LinearLayout.LayoutParams(0, WRAP, 1f));
+
+        heroArtwork = new ImageView(this);
+        heroArtwork.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        heroArtwork.setPadding(dp(12), dp(12), dp(12), dp(12));
+        heroArtwork.setBackground(Ui.round(0x242A2D35, dp(14)));
+        LinearLayout.LayoutParams artLp = new LinearLayout.LayoutParams(dp(184), dp(104));
+        artLp.leftMargin = dp(24);
+        hero.addView(heroArtwork, artLp);
+        LinearLayout.LayoutParams heroLp = new LinearLayout.LayoutParams(MATCH, dp(160));
+        heroLp.setMargins(dp(56), dp(8), dp(56), dp(12));
+        column.addView(hero, heroLp);
+        showHero(null, null);
+
         apps = new Row(Catalog.APPS, "Aplicaciones", column);
         inputs = new Row(Catalog.INPUTS, "Entradas", column);
         return root;
@@ -525,7 +570,10 @@ public final class Home extends Activity {
         v.setOnClickListener(click);
         v.setOnFocusChangeListener((view, has) -> {
             view.animate().scaleX(has ? 1.06f : 1f).scaleY(has ? 1.06f : 1f).setDuration(110).start();
-            if (has) focusBackground(null);
+            if (has) {
+                focusBackground(null);
+                showHero(null, null);
+            }
         });
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(WRAP, WRAP);
         lp.leftMargin = dp(12);
@@ -539,6 +587,7 @@ public final class Home extends Activity {
         applied = cfg.version();
         int accent = cfg.accent();
         for (TextView c : chips) Ui.focusStyle(c, accent, 0x14FFFFFF, dp(18));
+        if (heroAccent != null) heroAccent.setBackground(Ui.round(accent, dp(3)));
         render(apps);
         render(inputs);
         background();
@@ -594,7 +643,11 @@ public final class Home extends Activity {
             Tile t = new Tile(this, it, row.kind, Catalog.label(cfg, it), w, h, labels, accent);
             t.setOnClickListener(v -> open((Tile) v));
             t.setOnFocusChangeListener((v, has) -> {
-                if (has) focusBackground(((Tile) v).item);
+                if (has) {
+                    Tile selected = (Tile) v;
+                    focusBackground(selected.item);
+                    showHero(selected.item, selected.kind);
+                }
             });
             t.setOnLongClickListener(v -> {
                 menu((Tile) v);
@@ -628,9 +681,43 @@ public final class Home extends Activity {
             ui.post(() -> {
                 ViewGroup tiles = apps.tiles();
                 for (int i = 0; i < tiles.getChildCount(); i++) tiles.getChildAt(i).invalidate();
-                if (focusedItem() == it) focusBackground(it);
+                if (focusedItem() == it) {
+                    focusBackground(it);
+                    showHero(it, Catalog.APPS);
+                }
             });
         });
+    }
+
+    /** Updates the lightweight featured panel without loading or decoding additional artwork. */
+    private void showHero(Item item, String kind) {
+        if (heroTitle == null) return;
+        if (item == null) {
+            heroEyebrow.setText("DUMBTV HOME");
+            heroTitle.setText("Tu entretenimiento, a un botón.");
+            heroHint.setText("Explora tus aplicaciones y entradas con el control remoto.");
+            heroArtwork.setImageDrawable(null);
+            heroArtwork.setVisibility(View.GONE);
+            return;
+        }
+
+        boolean app = Catalog.APPS.equals(kind);
+        heroEyebrow.setText(app ? "APLICACIÓN SELECCIONADA" : "ENTRADA SELECCIONADA");
+        heroTitle.setText(Catalog.label(cfg, item));
+        heroHint.setText("OK para abrir  ·  Mantén OK para más opciones");
+
+        Drawable source = item.banner != null ? item.banner : item.icon;
+        Drawable copy = null;
+        if (source != null && source.getConstantState() != null) {
+            try {
+                copy = source.getConstantState().newDrawable(getResources()).mutate();
+            } catch (RuntimeException ignored) {
+                // Artwork is optional; the selected app name and controls remain sufficient.
+            }
+        }
+        heroArtwork.setImageDrawable(copy);
+        heroArtwork.setVisibility(copy == null ? View.GONE : View.VISIBLE);
+        heroArtwork.setContentDescription(Catalog.label(cfg, item));
     }
 
     private Item focusedItem() {

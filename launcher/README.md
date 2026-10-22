@@ -6,13 +6,13 @@ A home screen for Fire TV that does one job: show your apps and your HDMI inputs
   <img src="../docs/assets/screens/home.png" alt="dumbtv home: a clock, an Apps row and an Inputs row" width="720">
 </p>
 
-- **54 KB.** Plain Java and Android views. No AndroidX, Kotlin, Compose, Play
+- **About 58 KB.** Plain Java and Android views. No AndroidX, Kotlin, Compose, Play
   Services or any other library.
 - **No network.** There is no `INTERNET` permission, so Android will not let it
   open a connection.
-- **No permissions on Fire OS 7 and 8.** It declares three (usage access, task
-  order, boot completed), each limited to Android 8.1 and earlier, for the Fire OS 6
-  Keeper below. Check: `aapt2 dump permissions dumbtv-home.apk`.
+- **No additional runtime permissions.** The three Keeper permissions (usage access,
+  task order, boot completed) remain limited to Android 8.1 and earlier. Check:
+  `aapt2 dump permissions dumbtv-home.apk`.
 - **No ads, no recommended rows, no account, no analytics, no update checks.**
 - About 60–70 MB of memory with the home screen showing, about 37 MB while an app
   plays (measured on a Fire TV Edition television with 1.4 GB of RAM).
