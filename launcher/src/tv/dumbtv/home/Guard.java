@@ -11,14 +11,17 @@ import android.graphics.PixelFormat;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 
 /**
- * Fire OS keeps HOME bound to Amazon's protected launcher and handles the HOME key before any
- * accessibility filter sees it, so this service waits for Amazon's home window and replaces it.
+ * Fire OS may route HOME to Amazon's protected launcher, so this service filters HOME before
+ * device policy and opens our home directly. The window observer remains a fallback for launches
+ * that do not pass through the accessibility key filter.
  *
  * A plain startActivity right after a HOME press is held back by Android's five-second
  * app-switch delay. An alarm-fired PendingIntent is sent by system_server, which is exempt,
@@ -35,8 +38,9 @@ import android.view.accessibility.AccessibilityEvent;
 public final class Guard extends AccessibilityService {
     static final String AMAZON = "com.amazon.tv.launcher";
     private static final String AMAZON_HOME = "com.amazon.tv.launcher.ui.HomeActivity_vNext";
+    private static final String DEBUG_TAG = "DumbtvHomeDbg";
     private static final long COVER_MAX_MS = 1500;
-    private static final long REPEAT_MS = 1000;
+    private static final long REPEAT_MS = 150;
     private static final long LAUNCH_FALLBACK_MS = 150;
 
     private static volatile boolean paused;
@@ -45,8 +49,17 @@ public final class Guard extends AccessibilityService {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable uncover = this::uncover;
     private final Runnable launch = () -> home(this);
+    private final Runnable keyLaunch = this::launchWhenCovered;
     private View cover;
     private long lastLaunch;
+
+    private static boolean debugEnabled() {
+        return Log.isLoggable(DEBUG_TAG, Log.DEBUG);
+    }
+
+    private static void debug(String message) {
+        Log.d(DEBUG_TAG, "uptime=" + SystemClock.uptimeMillis() + " " + message);
+    }
 
     /** Lets Amazon's home stay on screen until the user leaves it. */
     static void pause() {
@@ -55,6 +68,7 @@ public final class Guard extends AccessibilityService {
     }
 
     static void home(Context c) {
+        if (debugEnabled()) debug("schedule-home context=" + c.getClass().getSimpleName());
         AlarmManager alarms = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
         alarms.setExact(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime(), launch(c));
     }
@@ -92,6 +106,7 @@ public final class Guard extends AccessibilityService {
     @Override
     protected void onServiceConnected() {
         running = this;
+        if (debugEnabled()) debug("guard-connected");
         View view = new View(this);
         view.setVisibility(View.GONE);
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
@@ -108,11 +123,33 @@ public final class Guard extends AccessibilityService {
 
     @Override
     public void onDestroy() {
+        if (debugEnabled()) debug("guard-destroyed");
         handler.removeCallbacks(uncover);
         handler.removeCallbacks(launch);
+        handler.removeCallbacks(keyLaunch);
         if (cover != null) ((WindowManager) getSystemService(WINDOW_SERVICE)).removeView(cover);
         if (running == this) running = null;
         super.onDestroy();
+    }
+
+    @Override
+    protected boolean onKeyEvent(KeyEvent event) {
+        if (debugEnabled()) {
+            debug("key-event key=" + KeyEvent.keyCodeToString(event.getKeyCode())
+                    + " action=" + (event.getAction() == KeyEvent.ACTION_DOWN ? "down" : "up")
+                    + " repeat=" + event.getRepeatCount() + " eventTime=" + event.getEventTime()
+                    + " deviceId=" + event.getDeviceId() + " source=0x"
+                    + Integer.toHexString(event.getSource()) + " flags=0x"
+                    + Integer.toHexString(event.getFlags()));
+        }
+        if (event.getKeyCode() != KeyEvent.KEYCODE_HOME) return false;
+        if (debugEnabled()) debug("key-home consumed=true");
+        if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
+            paused = false;
+            handler.removeCallbacks(keyLaunch);
+            handler.post(keyLaunch);
+        }
+        return true;
     }
 
     @Override
@@ -120,6 +157,9 @@ public final class Guard extends AccessibilityService {
         if (e.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return;
         CharSequence pkg = e.getPackageName(), cls = e.getClassName();
         if (pkg == null) return;
+        if ((AMAZON.contentEquals(pkg) || getPackageName().contentEquals(pkg)) && debugEnabled()) {
+            debug("window package=" + pkg + " class=" + cls);
+        }
         if (!AMAZON.contentEquals(pkg)) {
             if ("com.android.systemui".contentEquals(pkg) || "android".contentEquals(pkg)) return;
             paused = false;
@@ -141,6 +181,8 @@ public final class Guard extends AccessibilityService {
      */
     private void launchWhenCovered() {
         handler.removeCallbacks(launch);
+        if (debugEnabled()) debug("redirect-attempt cover="
+                + (cover == null ? "missing" : cover.getVisibility() == View.VISIBLE ? "visible" : "hidden"));
         if (cover == null) {
             home(this);
             return;
