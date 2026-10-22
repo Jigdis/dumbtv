@@ -40,7 +40,7 @@ Objective: redesign dumbtv home as a Spanish-language, PS5-inspired launcher whi
 - Checks: API 25 build, host tests, `git diff --check`, same-signature TV update, and visual confirmation on the TV.
 ## Tasks
 - T1 — S1-S3; inline; complete for authorized local scope; commit: `de4e956`.
-- T2 — S4, S6; inline; complete; work-unit commit recorded after source/doc commit; replace the banner-only composition with a substantial PS5-informed home redesign.
+- T2 — S4, S6; inline; complete; work-unit commit: `c38c0aa`; replace the banner-only composition with a substantial PS5-informed home redesign.
   Risk: item 6 (interactive Android View behavior has no automated device-side regression test).
 - T3 — S5; inline; complete; commit: `77ef2d7`; remove dock and dock-only permission/tracking while preserving the preexisting HOME recovery route; same-signature TV update verified.
   Risk: items 2 and 6 (remove the dock-only permission and verify the interactive launcher on device).
@@ -48,6 +48,7 @@ Objective: redesign dumbtv home as a Spanish-language, PS5-inspired launcher whi
 ## Log
 - L26 — User said the PS5 interface still looks like original DumbTV because only a banner was added: “la intefarz de ps5 no esta para nada lograda, lo lo veo extamente igual dumbtv que la version original solo porque agregaste un banner”. Reopen the home visual task and redesign the overall composition; the dock remains rejected.
 - L27 — Rebuilt with the retained release keystore and verified the APK signer matched the installed app; installed via Windows ADB because WSL ADB had a separate unauthorized key. Same-signature `adb install -r` succeeded, firstInstallTime remained 2026-10-22 11:46:57, and visual inspection showed the new app rail/detail composition with selected artwork changing from Disney+ to Aptoide TV after DPAD_RIGHT. Parent API-25 build, FocusColorTest, and diff check passed.
+- L28 — Work-unit commit `c38c0aa` assessed against `77ef2d7`: medium risk, `review_due=false`, `under_budget`; no native review transaction was required. No push or PR was created.
 - L25 — Removed the rejected dock and deployed the no-dock build with the same signature while preserving app data; independent verification passed host tests and strict API-25 compilation. Parent WSL build, host test, manifest/dock-reference checks, same-signature update, and no-dock UI inspection passed. Official PS5 UX research completed; see L24.
 - L18 — User clarified the new dock should open “cuando ya estemos en dumbtv”.
 - L19 — Independent verification found permission-free wording stale after the narrowly scoped normal `KILL_BACKGROUND_PROCESSES` declaration. Updated root/launcher README, manifest comment, and build script description to document the permission and accurately state that cleanup is best-effort and does not clear all caches.
