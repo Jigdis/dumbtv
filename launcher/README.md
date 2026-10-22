@@ -140,7 +140,9 @@ adb push *.jpg /sdcard/Android/data/tv.dumbtv.home/files/wallpapers/
 (06:00 to 13:00), `afternoon` or `evening` (13:00 to 20:00), `night` (the rest), as
 in `morning-coast.jpg`.
 
-`background=adaptive` takes a dark colour from the focused app's artwork.
+`background=adaptive` uses the selected app's existing landscape artwork as a dimmed,
+full-screen canvas and takes a dark colour from that artwork when no banner is available.
+This is the default; selecting a wallpaper or a fixed colour keeps that background instead.
 `background=adaptive-tint` keeps the wallpaper and adds a light wash of that
 colour; without a wallpaper it shows graphite.
 

@@ -62,12 +62,12 @@ public final class Home extends Activity {
     private boolean resumed, landed;
     private FrameLayout root;
     private ImageView wall;
+    private ImageView selectedBackdrop;
     private View shade;
     private View tint;
     private TextView clock, date;
     private TextView heroEyebrow, heroTitle, heroHint;
     private ImageView heroArtwork;
-    private View heroAccent;
     private Row apps, inputs;
     private Tile moving;
     private String wallKey;
@@ -405,6 +405,10 @@ public final class Home extends Activity {
         wall = new ImageView(this);
         wall.setScaleType(ImageView.ScaleType.CENTER_CROP);
         root.addView(wall, new FrameLayout.LayoutParams(MATCH, MATCH));
+        selectedBackdrop = new ImageView(this);
+        selectedBackdrop.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        selectedBackdrop.setVisibility(View.GONE);
+        root.addView(selectedBackdrop, new FrameLayout.LayoutParams(MATCH, MATCH));
         shade = new View(this);
         root.addView(shade, new FrameLayout.LayoutParams(MATCH, MATCH));
         tint = new View(this);
@@ -472,7 +476,7 @@ public final class Home extends Activity {
         TextView brand = Ui.text(this, 13, Ui.MUTED, Ui.MEDIUM);
         brand.setText("DUMBTV HOME");
         brand.setLetterSpacing(0.12f);
-        clock = Ui.text(this, 52, Ui.TEXT, Ui.LIGHT);
+        clock = Ui.text(this, 34, Ui.TEXT, Ui.LIGHT);
         date = Ui.text(this, 15, Ui.MUTED, Ui.MEDIUM);
         date.setPadding(dp(2), dp(8), 0, 0);
         when.addView(brand);
@@ -483,22 +487,17 @@ public final class Home extends Activity {
         head.addView(chip("Ajustes", v -> openSettings()));
         column.addView(head, new LinearLayout.LayoutParams(MATCH, WRAP));
 
+        apps = new Row(Catalog.APPS, "Juegos y aplicaciones", column);
+
         LinearLayout hero = new LinearLayout(this);
         hero.setGravity(Gravity.CENTER_VERTICAL);
-        hero.setPadding(dp(24), dp(18), dp(24), dp(18));
-        hero.setBackground(Ui.round(0xD91A1C22, dp(18)));
-        View accent = new View(this);
-        accent.setBackground(Ui.round(cfg.accent(), dp(3)));
-        heroAccent = accent;
-        LinearLayout.LayoutParams accentLp = new LinearLayout.LayoutParams(dp(4), MATCH);
-        accentLp.rightMargin = dp(20);
-        hero.addView(accent, accentLp);
+        hero.setPadding(dp(56), dp(12), dp(56), dp(8));
 
         LinearLayout heroCopy = new LinearLayout(this);
         heroCopy.setOrientation(LinearLayout.VERTICAL);
         heroEyebrow = Ui.text(this, 12, Ui.MUTED, Ui.MEDIUM);
         heroEyebrow.setLetterSpacing(0.12f);
-        heroTitle = Ui.text(this, 28, Ui.TEXT, Ui.LIGHT);
+        heroTitle = Ui.text(this, 38, Ui.TEXT, Ui.LIGHT);
         heroTitle.setMaxLines(2);
         heroTitle.setEllipsize(TextUtils.TruncateAt.END);
         heroHint = Ui.text(this, 14, Ui.MUTED, Ui.MEDIUM);
@@ -514,16 +513,15 @@ public final class Home extends Activity {
         heroArtwork = new ImageView(this);
         heroArtwork.setScaleType(ImageView.ScaleType.FIT_CENTER);
         heroArtwork.setPadding(dp(12), dp(12), dp(12), dp(12));
-        heroArtwork.setBackground(Ui.round(0x242A2D35, dp(14)));
-        LinearLayout.LayoutParams artLp = new LinearLayout.LayoutParams(dp(184), dp(104));
-        artLp.leftMargin = dp(24);
+        heroArtwork.setBackground(Ui.round(0x332A2D35, dp(18)));
+        LinearLayout.LayoutParams artLp = new LinearLayout.LayoutParams(dp(148), dp(148));
+        artLp.leftMargin = dp(32);
         hero.addView(heroArtwork, artLp);
-        LinearLayout.LayoutParams heroLp = new LinearLayout.LayoutParams(MATCH, dp(160));
-        heroLp.setMargins(dp(56), dp(8), dp(56), dp(12));
+        LinearLayout.LayoutParams heroLp = new LinearLayout.LayoutParams(MATCH, dp(194));
+        heroLp.setMargins(0, dp(2), 0, dp(8));
         column.addView(hero, heroLp);
         showHero(null, null);
 
-        apps = new Row(Catalog.APPS, "Aplicaciones", column);
         inputs = new Row(Catalog.INPUTS, "Entradas", column);
         return root;
     }
@@ -571,7 +569,7 @@ public final class Home extends Activity {
         v.setOnFocusChangeListener((view, has) -> {
             view.animate().scaleX(has ? 1.06f : 1f).scaleY(has ? 1.06f : 1f).setDuration(110).start();
             if (has) {
-                focusBackground(null);
+                focusBackground(null, null);
                 showHero(null, null);
             }
         });
@@ -587,7 +585,6 @@ public final class Home extends Activity {
         applied = cfg.version();
         int accent = cfg.accent();
         for (TextView c : chips) Ui.focusStyle(c, accent, 0x14FFFFFF, dp(18));
-        if (heroAccent != null) heroAccent.setBackground(Ui.round(accent, dp(3)));
         render(apps);
         render(inputs);
         background();
@@ -645,7 +642,7 @@ public final class Home extends Activity {
             t.setOnFocusChangeListener((v, has) -> {
                 if (has) {
                     Tile selected = (Tile) v;
-                    focusBackground(selected.item);
+                    focusBackground(selected.item, selected.kind);
                     showHero(selected.item, selected.kind);
                 }
             });
@@ -682,7 +679,7 @@ public final class Home extends Activity {
                 ViewGroup tiles = apps.tiles();
                 for (int i = 0; i < tiles.getChildCount(); i++) tiles.getChildAt(i).invalidate();
                 if (focusedItem() == it) {
-                    focusBackground(it);
+                    focusBackground(it, Catalog.APPS);
                     showHero(it, Catalog.APPS);
                 }
             });
@@ -706,7 +703,7 @@ public final class Home extends Activity {
         heroTitle.setText(Catalog.label(cfg, item));
         heroHint.setText("OK para abrir  ·  Mantén OK para más opciones");
 
-        Drawable source = item.banner != null ? item.banner : item.icon;
+        Drawable source = item.icon;
         Drawable copy = null;
         if (source != null && source.getConstantState() != null) {
             try {
@@ -725,8 +722,14 @@ public final class Home extends Activity {
         return focused instanceof Tile ? ((Tile) focused).item : null;
     }
 
-    private void focusBackground(Item it) {
+    private String focusedKind() {
+        View focused = getCurrentFocus();
+        return focused instanceof Tile ? ((Tile) focused).kind : null;
+    }
+
+    private void focusBackground(Item it, String kind) {
         String mode = cfg.get(Config.BACKGROUND);
+        updateSelectedBackdrop(it, kind, mode);
         if (!resumed || !"adaptive".equals(mode) && !"adaptive-tint".equals(mode)) return;
         if ("adaptive-tint".equals(mode) && !tintWallpaper) return;
         if (it != null && it.info != null && it.backgroundColor == 0 && !it.colorRequested
@@ -736,7 +739,7 @@ public final class Home extends Activity {
                 int color = FocusColor.from(it.banner != null ? it.banner : it.icon);
                 ui.post(() -> {
                     it.backgroundColor = color;
-                    if (focusedItem() == it) focusBackground(it);
+                    if (focusedItem() == it) focusBackground(it, Catalog.APPS);
                 });
             });
         }
@@ -753,6 +756,35 @@ public final class Home extends Activity {
         colorAnimation.setDuration(250);
         colorAnimation.addUpdateListener(a -> setAdaptiveColor((Integer) a.getAnimatedValue()));
         colorAnimation.start();
+    }
+
+    /** Shows already-loaded app banner art as the full-screen adaptive home canvas. */
+    private void updateSelectedBackdrop(Item item, String kind, String mode) {
+        if (selectedBackdrop == null) return;
+        if (!"adaptive".equals(mode)) {
+            selectedBackdrop.setImageDrawable(null);
+            selectedBackdrop.setVisibility(View.GONE);
+            return;
+        }
+        Drawable source = item != null && Catalog.APPS.equals(kind) ? item.banner : null;
+        Drawable copy = null;
+        if (source != null && source.getConstantState() != null) {
+            try {
+                copy = source.getConstantState().newDrawable(getResources()).mutate();
+            } catch (RuntimeException ignored) {
+                // Artwork is optional; the adaptive color remains available as a fallback.
+            }
+        }
+        if (copy == null) {
+            selectedBackdrop.setImageDrawable(null);
+            selectedBackdrop.setVisibility(View.GONE);
+            shade.setBackgroundColor(Color.TRANSPARENT);
+            return;
+        }
+        selectedBackdrop.setImageDrawable(copy);
+        selectedBackdrop.setAlpha(0.30f);
+        selectedBackdrop.setVisibility(View.VISIBLE);
+        shade.setBackgroundColor(Color.argb(138, 0, 0, 0));
     }
 
     private void setAdaptiveColor(int color) {
@@ -821,7 +853,7 @@ public final class Home extends Activity {
                 tint.setBackgroundColor(Color.TRANSPARENT);
             }
             backgroundMode = mode;
-            focusBackground(focusedItem());
+            focusBackground(focusedItem(), focusedKind());
         } else if ("adaptive-tint".equals(mode)) {
             root.setBackgroundColor(file == null ? cfg.background() : Color.BLACK);
             if (!mode.equals(backgroundMode) || file == null) {
@@ -831,7 +863,7 @@ public final class Home extends Activity {
                 displayedColor = Color.TRANSPARENT;
             }
             backgroundMode = mode;
-            if (tintWallpaper) focusBackground(focusedItem());
+            if (tintWallpaper) focusBackground(focusedItem(), focusedKind());
         } else {
             stopColorAnimation();
             targetColor = 0;
@@ -840,7 +872,9 @@ public final class Home extends Activity {
             root.setBackgroundColor(cfg.background());
         }
         int dim = Integer.parseInt(cfg.get(Config.DIM));
-        shade.setBackgroundColor(file == null ? Color.TRANSPARENT : Color.argb(dim * 255 / 100, 0, 0, 0));
+        int shadeAlpha = file != null ? dim * 255 / 100
+                : selectedBackdrop.getVisibility() == View.VISIBLE ? 138 : 0;
+        shade.setBackgroundColor(shadeAlpha == 0 ? Color.TRANSPARENT : Color.argb(shadeAlpha, 0, 0, 0));
         String key = file == null ? null : file.getPath() + ":" + file.lastModified();
         if (key == null ? wallKey == null : key.equals(wallKey)) return;
         wallKey = key;

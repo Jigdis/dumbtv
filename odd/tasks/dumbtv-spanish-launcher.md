@@ -23,8 +23,8 @@ Objective: redesign dumbtv home as a Spanish-language, PS5-inspired launcher whi
 ### S4 — Refresh the launcher home visuals
 - Authorized scope: implement a console-inspired visual refresh of DumbTV Home only; keep the full device Settings replacement deferred and do not change launcher interception/recovery behavior.
 - User wording: “implementa la parte grafica ahora si, pero sin meter de momento despliegue a la tv. yo te aviso en que momento”
-- Acceptance: improve the home screen's visual hierarchy and focused-item treatment using existing Android Views and already-loaded app/input metadata; preserve D-pad navigation, launch actions, saved preferences, API 25 compatibility, and lightweight runtime behavior. Do not install or deploy to the TV.
-- Checks: `launcher/build.sh`, host-side launcher tests, `git diff --check`, and source review of focus/navigation/performance paths; TV runtime validation is explicitly out of scope.
+- Acceptance: make a substantial home-screen composition change based on PS5's actual home structure, not a banner-only addition; use existing Android Views and already-loaded app/input metadata; preserve D-pad navigation, launch actions, saved preferences, API 25 compatibility, and lightweight runtime behavior. TV deployment requires the user's authorization, which was later granted.
+- Checks: `launcher/build.sh`, host-side launcher tests, `git diff --check`, source review of focus/navigation/performance paths, and same-signature TV runtime confirmation (authorized by the user).
 
 ### S5 — Remove the rejected dock and use official PS5 interface structure
 - User-authorized revision: remove the unsuccessful dock and use official PS5 interface structure as the visual reference for future home-screen work.
@@ -34,14 +34,20 @@ Objective: redesign dumbtv home as a Spanish-language, PS5-inspired launcher whi
   > Solo quiero que te bases en la interfaz grafica de ps5, revisa como esta construida realmente”
 - Acceptance: no dock panel, dock actions, dock-specific HOME-origin tracking, or dock-only permission remains. Preserve the established HOME-to-launcher recovery behavior and the S4 Spanish home visuals. Adapt PS5 principles rather than copying proprietary assets.
 - Checks: API 25 compile/build, host-side launcher test, `git diff --check`, static check that dock-only code/permission is absent, same-signature TV update, and confirmation that the launcher UI no longer displays the dock.
+### S6 — Redesign the home composition beyond the banner
+- User wording: “la intefarz de ps5 no esta para nada lograda, lo lo veo extamente igual dumbtv que la version original solo porque agregaste un banner”
+- Acceptance: change the overall home composition and hierarchy so the result is recognizably a restrained PS5-inspired interface, while keeping the dock removed and DumbTV lightweight; do not treat adding or enlarging a banner as sufficient.
+- Checks: API 25 build, host tests, `git diff --check`, same-signature TV update, and visual confirmation on the TV.
 ## Tasks
 - T1 — S1-S3; inline; complete for authorized local scope; commit: `de4e956`.
-- T2 — S4; inline; complete; included with T3 in the final graphics/removal work-unit commit.
+- T2 — S4, S6; inline; complete; work-unit commit recorded after source/doc commit; replace the banner-only composition with a substantial PS5-informed home redesign.
   Risk: item 6 (interactive Android View behavior has no automated device-side regression test).
-- T3 — S5; inline; complete; remove dock and dock-only permission/tracking while preserving the preexisting HOME recovery route; same-signature TV update verified; commit recorded in L25.
+- T3 — S5; inline; complete; commit: `77ef2d7`; remove dock and dock-only permission/tracking while preserving the preexisting HOME recovery route; same-signature TV update verified.
   Risk: items 2 and 6 (remove the dock-only permission and verify the interactive launcher on device).
 
 ## Log
+- L26 — User said the PS5 interface still looks like original DumbTV because only a banner was added: “la intefarz de ps5 no esta para nada lograda, lo lo veo extamente igual dumbtv que la version original solo porque agregaste un banner”. Reopen the home visual task and redesign the overall composition; the dock remains rejected.
+- L27 — Rebuilt with the retained release keystore and verified the APK signer matched the installed app; installed via Windows ADB because WSL ADB had a separate unauthorized key. Same-signature `adb install -r` succeeded, firstInstallTime remained 2026-10-22 11:46:57, and visual inspection showed the new app rail/detail composition with selected artwork changing from Disney+ to Aptoide TV after DPAD_RIGHT. Parent API-25 build, FocusColorTest, and diff check passed.
 - L25 — Removed the rejected dock and deployed the no-dock build with the same signature while preserving app data; independent verification passed host tests and strict API-25 compilation. Parent WSL build, host test, manifest/dock-reference checks, same-signature update, and no-dock UI inspection passed. Official PS5 UX research completed; see L24.
 - L18 — User clarified the new dock should open “cuando ya estemos en dumbtv”.
 - L19 — Independent verification found permission-free wording stale after the narrowly scoped normal `KILL_BACKGROUND_PROCESSES` declaration. Updated root/launcher README, manifest comment, and build script description to document the permission and accurately state that cleanup is best-effort and does not clear all caches.

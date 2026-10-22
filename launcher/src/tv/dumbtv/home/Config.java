@@ -73,7 +73,7 @@ final class Config {
     static final Choice SWITCH = new Choice("switch", "Abrir entradas con", "auto",
             new String[] {"auto", "tv", "home"},
             new String[] {"Automático", "La aplicación del televisor", "dumbtv home"});
-    static final Choice BACKGROUND = new Choice("background", "Fondo", "black",
+    static final Choice BACKGROUND = new Choice("background", "Fondo", "adaptive",
             new String[] {"black", "graphite", "midnight", "image", "adaptive", "adaptive-tint"},
             new String[] {"Negro", "Grafito", "Medianoche", "Archivo de imagen", "Color adaptable", "Tinte adaptable del fondo"});
     static final Choice DIM = new Choice("dim", "Oscurecer imagen", "40",
