@@ -24,9 +24,10 @@ public final class FocusColorTest {
         check((FocusColor.tint(color) >>> 24) == 61, "tint is 24 percent opaque");
         check((FocusColor.tint(color) & 0xFFFFFF) == (color & 0xFFFFFF), "tint keeps color");
         check("black".equals(Config.BACKGROUND.fallback), "default background unchanged");
-        check("Adaptive wallpaper tint".equals(Config.BACKGROUND.name("adaptive-tint")),
-                "tint is an Options choice");
-        check("Amber".equals(Config.ACCENT.name("amber")), "amber accent unchanged");
+        check("Tinte adaptable del fondo".equals(Config.BACKGROUND.name("adaptive-tint")),
+                "background choice is Spanish");
+        check("Ámbar".equals(Config.ACCENT.name("amber")), "accent choice is Spanish");
+        check("Color de acento".equals(Config.ACCENT.title), "settings labels are Spanish");
         System.out.println("FocusColorTest passed");
     }
 }

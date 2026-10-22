@@ -52,41 +52,41 @@ final class Config {
         }
     }
 
-    static final Choice ACCENT = new Choice("accent", "Accent color", "blue",
+    static final Choice ACCENT = new Choice("accent", "Color de acento", "blue",
             new String[] {"white", "blue", "cyan", "green", "amber", "red", "pink", "violet"},
-            new String[] {"White", "Blue", "Cyan", "Green", "Amber", "Red", "Pink", "Violet"});
-    static final Choice TILES = new Choice("tiles", "Tile size", "medium",
+            new String[] {"Blanco", "Azul", "Cian", "Verde", "Ámbar", "Rojo", "Rosa", "Violeta"});
+    static final Choice TILES = new Choice("tiles", "Tamaño de mosaico", "medium",
             new String[] {"small", "medium", "large"},
-            new String[] {"Small", "Medium", "Large"});
-    static final Choice LAYOUT = new Choice("layout", "Layout", "rows",
+            new String[] {"Pequeño", "Mediano", "Grande"});
+    static final Choice LAYOUT = new Choice("layout", "Distribución", "rows",
             new String[] {"rows", "grid"},
-            new String[] {"Rows", "Grid"});
-    static final Choice LABELS = new Choice("labels", "App names", "focus",
+            new String[] {"Filas", "Cuadrícula"});
+    static final Choice LABELS = new Choice("labels", "Nombres de aplicaciones", "focus",
             new String[] {"focus", "always", "never"},
-            new String[] {"On focus", "Always", "Never"});
-    static final Choice CLOCK = new Choice("clock", "Clock", "auto",
+            new String[] {"Al seleccionar", "Siempre", "Nunca"});
+    static final Choice CLOCK = new Choice("clock", "Reloj", "auto",
             new String[] {"auto", "24h", "12h"},
-            new String[] {"System", "24-hour", "12-hour"});
-    static final Choice INPUTS = new Choice("inputs", "Inputs row", "on",
+            new String[] {"Automático", "Formato de 24 horas", "Formato de 12 horas"});
+    static final Choice INPUTS = new Choice("inputs", "Fila de entradas", "on",
             new String[] {"on", "off"},
-            new String[] {"Shown", "Hidden"});
-    static final Choice SWITCH = new Choice("switch", "Open inputs with", "auto",
+            new String[] {"Visible", "Oculta"});
+    static final Choice SWITCH = new Choice("switch", "Abrir entradas con", "auto",
             new String[] {"auto", "tv", "home"},
-            new String[] {"Automatic", "The TV's app", "dumbtv home"});
-    static final Choice BACKGROUND = new Choice("background", "Background", "black",
+            new String[] {"Automático", "La aplicación del televisor", "dumbtv home"});
+    static final Choice BACKGROUND = new Choice("background", "Fondo", "black",
             new String[] {"black", "graphite", "midnight", "image", "adaptive", "adaptive-tint"},
-            new String[] {"Black", "Graphite", "Midnight", "Image file", "Adaptive solid", "Adaptive wallpaper tint"});
-    static final Choice DIM = new Choice("dim", "Image dim", "40",
+            new String[] {"Negro", "Grafito", "Medianoche", "Archivo de imagen", "Color adaptable", "Tinte adaptable del fondo"});
+    static final Choice DIM = new Choice("dim", "Oscurecer imagen", "40",
             new String[] {"0", "20", "40", "60", "80"},
             new String[] {"0%", "20%", "40%", "60%", "80%"});
 
-    static final Choice ROTATE = new Choice("rotate", "Wallpaper rotation", "off",
+    static final Choice ROTATE = new Choice("rotate", "Rotación de fondos", "off",
             new String[] {"off", "visit", "hourly", "daily", "daytime"},
-            new String[] {"Off", "Every return home", "Every hour", "Every day", "By time of day"});
+            new String[] {"Desactivada", "Al volver al inicio", "Cada hora", "Cada día", "Según la hora del día"});
 
     static final Choice[] CHOICES = {ACCENT, TILES, LAYOUT, LABELS, CLOCK, INPUTS, SWITCH, BACKGROUND, DIM, ROTATE};
 
-    /** Folder of wallpapers, next to home.conf, that Background › Image file rotates through. */
+    /** Folder of wallpapers, next to home.conf, that Fondo › Archivo de imagen rotates through. */
     static final String WALLPAPERS = "wallpapers";
     private static final String OFFSET = "wallpaper.offset";
 

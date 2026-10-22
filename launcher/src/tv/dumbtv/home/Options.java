@@ -43,20 +43,25 @@ public final class Options extends Activity {
         scroll.addView(list);
 
         TextView title = Ui.text(this, 30, Ui.TEXT, Ui.LIGHT);
-        title.setText("Options");
+        title.setText("Opciones");
         title.setPadding(dp(16), 0, 0, dp(20));
         list.addView(title);
 
+        TextView subtitle = Ui.text(this, 15, Ui.MUTED, Ui.MEDIUM);
+        subtitle.setText("Personaliza tu pantalla de inicio. Los cambios se guardan al instante.");
+        subtitle.setPadding(dp(16), 0, 0, dp(24));
+        list.addView(subtitle);
+
         for (Config.Choice c : Config.CHOICES) list.addView(choice(c));
-        list.addView(action("Next wallpaper", () -> {
+        list.addView(action("Siguiente fondo", () -> {
             cfg.nextWallpaper();
             refresh();
         }));
         list.addView(gap());
-        list.addView(action("Apps on home screen", () -> pick(Catalog.APPS)));
-        list.addView(action("Inputs on home screen", () -> pick(Catalog.INPUTS)));
-        list.addView(action("Reset order, names and hidden tiles", this::reset));
-        list.addView(action("Open Amazon's home screen", () -> {
+        list.addView(action("Aplicaciones en el inicio", () -> pick(Catalog.APPS)));
+        list.addView(action("Entradas en el inicio", () -> pick(Catalog.INPUTS)));
+        list.addView(action("Restablecer orden, nombres y mosaicos ocultos", this::reset));
+        list.addView(action("Abrir la pantalla de inicio de Amazon", () -> {
             Guard.amazon(this);
             finish();
         }));
@@ -64,12 +69,12 @@ public final class Options extends Activity {
         TextView about = Ui.text(this, 13, Ui.FAINT, Ui.MEDIUM);
         about.setLineSpacing(0, 1.4f);
         about.setPadding(dp(16), dp(28), 0, 0);
-        about.setText("Settings file: " + cfg.dir + "/" + Config.FILE
-                + "\nOne wallpaper: name it exactly wallpaper.jpg (or .png) and put it in that folder"
-                + "\nSeveral wallpapers: put them in " + Config.WALLPAPERS + "/ with any names, and pick a rotation"
-                + "\nThen pick Background › Image file or Adaptive wallpaper tint. No permission is needed"
-                + "\nAdaptive wallpaper tint shows graphite until you add a wallpaper"
-                + "\nNo internet permission. No tracking, no ads, no accounts.");
+        about.setText("Archivo de configuración: " + cfg.dir + "/" + Config.FILE
+                + "\nPara usar un fondo, guárdalo en esa carpeta como wallpaper.jpg o wallpaper.png"
+                + "\nPara varios fondos, colócalos en " + Config.WALLPAPERS + "/ con cualquier nombre y elige una rotación"
+                + "\nDespués selecciona Fondo › Archivo de imagen o Tinte adaptable del fondo. No se requieren permisos"
+                + "\nEl tinte adaptable muestra el color grafito hasta que agregues un fondo"
+                + "\nSin permiso de Internet, rastreo, anuncios ni cuentas.");
         list.addView(about);
 
         setContentView(scroll);
@@ -188,19 +193,19 @@ public final class Options extends Activity {
             on[i] = Catalog.shown(cfg, kind, items.get(i));
         }
         new AlertDialog.Builder(this, Ui.DIALOG)
-                .setTitle(Catalog.APPS.equals(kind) ? "Apps on home screen" : "Inputs on home screen")
+                .setTitle(Catalog.APPS.equals(kind) ? "Aplicaciones en el inicio" : "Entradas en el inicio")
                 .setMultiChoiceItems(names, on, (d, which, checked) ->
                         Catalog.setShown(cfg, kind, items.get(which), checked))
-                .setPositiveButton("Done", null)
+                .setPositiveButton("Listo", null)
                 .show();
     }
 
     private void reset() {
         new AlertDialog.Builder(this, Ui.DIALOG)
-                .setTitle("Reset the home screen layout?")
-                .setMessage("Order, names and hidden tiles go back to default. Colors and sizes stay.")
-                .setPositiveButton("Reset", (d, w) -> cfg.removePrefix("name.", "apps.", "inputs."))
-                .setNegativeButton("Cancel", null)
+                .setTitle("¿Restablecer la pantalla de inicio?")
+                .setMessage("El orden, los nombres y los mosaicos ocultos volverán a sus valores iniciales. Los colores y tamaños se conservarán.")
+                .setPositiveButton("Restablecer", (d, w) -> cfg.removePrefix("name.", "apps.", "inputs."))
+                .setNegativeButton("Cancelar", null)
                 .show();
     }
 

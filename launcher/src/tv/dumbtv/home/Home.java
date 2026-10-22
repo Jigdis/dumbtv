@@ -119,10 +119,10 @@ public final class Home extends Activity {
         Row(String kind, String name, LinearLayout parent) {
             this.kind = kind;
             int edge = dp(56), bleed = dp(14);
-            title = Ui.text(Home.this, 12, Ui.FAINT, Ui.MEDIUM);
-            title.setText(name.toUpperCase(Locale.ROOT));
-            title.setLetterSpacing(0.14f);
-            title.setPadding(edge, dp(20), edge, dp(2));
+            title = Ui.text(Home.this, 18, Ui.TEXT, Ui.MEDIUM);
+            title.setText(name);
+            title.setLetterSpacing(0.01f);
+            title.setPadding(edge, dp(24), edge, dp(4));
             strip = new LinearLayout(Home.this);
             strip.setClipChildren(false);
             strip.setClipToPadding(false);
@@ -464,18 +464,22 @@ public final class Home extends Activity {
         head.setPadding(dp(56), 0, dp(56), dp(12));
         LinearLayout when = new LinearLayout(this);
         when.setOrientation(LinearLayout.VERTICAL);
+        TextView brand = Ui.text(this, 13, Ui.MUTED, Ui.MEDIUM);
+        brand.setText("DUMBTV HOME");
+        brand.setLetterSpacing(0.12f);
         clock = Ui.text(this, 52, Ui.TEXT, Ui.LIGHT);
         date = Ui.text(this, 15, Ui.MUTED, Ui.MEDIUM);
         date.setPadding(dp(2), dp(8), 0, 0);
+        when.addView(brand);
         when.addView(clock);
         when.addView(date);
         head.addView(when, new LinearLayout.LayoutParams(0, WRAP, 1f));
-        head.addView(chip("Options", v -> startActivity(new Intent(this, Options.class))));
-        head.addView(chip("Settings", v -> openSettings()));
+        head.addView(chip("Opciones", v -> startActivity(new Intent(this, Options.class))));
+        head.addView(chip("Ajustes", v -> openSettings()));
         column.addView(head, new LinearLayout.LayoutParams(MATCH, WRAP));
 
-        apps = new Row(Catalog.APPS, "Apps", column);
-        inputs = new Row(Catalog.INPUTS, "Inputs", column);
+        apps = new Row(Catalog.APPS, "Aplicaciones", column);
+        inputs = new Row(Catalog.INPUTS, "Entradas", column);
         return root;
     }
 
@@ -524,7 +528,7 @@ public final class Home extends Activity {
             if (has) focusBackground(null);
         });
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(WRAP, WRAP);
-        lp.leftMargin = dp(10);
+        lp.leftMargin = dp(12);
         lp.topMargin = dp(6);
         v.setLayoutParams(lp);
         chips.add(v);
@@ -808,15 +812,15 @@ public final class Home extends Activity {
         try {
             startActivity(i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED));
         } catch (ActivityNotFoundException | SecurityException e) {
-            Toast.makeText(this, "Could not open that", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "No se pudo abrir", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void menu(Tile t) {
         boolean app = Catalog.APPS.equals(t.kind);
         String[] actions = app
-                ? new String[] {"Move", "Rename", "Hide", "App info"}
-                : new String[] {"Move", "Rename", "Hide"};
+                ? new String[] {"Mover", "Cambiar nombre", "Ocultar", "Información de la aplicación"}
+                : new String[] {"Mover", "Cambiar nombre", "Ocultar"};
         new AlertDialog.Builder(this, Ui.DIALOG)
                 .setTitle(Catalog.label(cfg, t.item))
                 .setItems(actions, (d, which) -> {
@@ -832,7 +836,7 @@ public final class Home extends Activity {
                         case 2:
                             Catalog.setShown(cfg, t.kind, t.item, false);
                             render(app ? apps : inputs);
-                            Toast.makeText(this, "Hidden. Bring it back from Options.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Oculto. Puedes recuperarlo en Opciones.", Toast.LENGTH_SHORT).show();
                             break;
                         default:
                             launch(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
@@ -852,18 +856,18 @@ public final class Home extends Activity {
         box.addView(field);
         String key = "name." + t.item.id;
         AlertDialog d = new AlertDialog.Builder(this, Ui.DIALOG)
-                .setTitle("Rename")
+                .setTitle("Cambiar nombre")
                 .setView(box)
-                .setPositiveButton("Save", (dialog, w) -> {
+                .setPositiveButton("Guardar", (dialog, w) -> {
                     String name = field.getText().toString().trim();
                     cfg.set(key, name.equals(t.item.label.toString()) ? null : name);
                     apply();
                 })
-                .setNeutralButton("Original", (dialog, w) -> {
+                .setNeutralButton("Restaurar original", (dialog, w) -> {
                     cfg.set(key, null);
                     apply();
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton("Cancelar", null)
                 .create();
         d.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
         d.show();
