@@ -7,6 +7,34 @@ public final class FocusColorTest {
     }
 
     public static void main(String[] args) {
+        check(GuardRecoveryPolicy.shouldRetry(0, false, true), "active recovery allows first retry");
+        check(GuardRecoveryPolicy.shouldRetry(1, false, true), "active recovery allows second retry");
+        check(!GuardRecoveryPolicy.shouldRetry(2, false, true), "recovery retries are bounded");
+        check(!GuardRecoveryPolicy.shouldRetry(0, true, true), "paused recovery stops");
+        check(!GuardRecoveryPolicy.shouldRetry(0, false, false), "inactive recovery stops");
+        check(GuardRecoveryPolicy.delayMs(1) < GuardRecoveryPolicy.delayMs(2), "retries back off");
+        check(!GuardRecoveryPolicy.shouldCancelForWindow("tv.dumbtv.home", "tv.dumbtv.home",
+                "tv.dumbtv.home.Home", "com.amazon.tv.launcher", "tv.dumbtv.home.Home",
+                "android.view.View"), "Home window does not cancel recovery");
+        check(!GuardRecoveryPolicy.shouldCancelForWindow("tv.dumbtv.home", "tv.dumbtv.home",
+                "android.view.View", "com.amazon.tv.launcher", "tv.dumbtv.home.Home",
+                "android.view.View"), "own overlay does not cancel recovery");
+        check(GuardRecoveryPolicy.shouldCancelForWindow("tv.dumbtv.home", "tv.dumbtv.home",
+                "tv.dumbtv.home.Options", "com.amazon.tv.launcher", "tv.dumbtv.home.Home",
+                "android.view.View"), "internal Options screen cancels recovery");
+        check(GuardRecoveryPolicy.shouldCancelForWindow("tv.dumbtv.home", "tv.dumbtv.home",
+                "tv.dumbtv.home.Input", "com.amazon.tv.launcher", "tv.dumbtv.home.Home",
+                "android.view.View"), "internal Input screen cancels recovery");
+        check(!GuardRecoveryPolicy.shouldCancelForWindow("tv.dumbtv.home", "com.android.systemui",
+                "com.android.systemui.SomeWindow", "com.amazon.tv.launcher", "tv.dumbtv.home.Home",
+                "android.view.View"), "system UI does not cancel recovery");
+        check(!GuardRecoveryPolicy.shouldCancelForWindow("tv.dumbtv.home", "com.amazon.tv.launcher",
+                "com.amazon.tv.launcher.HomeActivity_vNext", "com.amazon.tv.launcher",
+                "tv.dumbtv.home.Home", "android.view.View"), "Amazon event does not cancel recovery");
+        check(GuardRecoveryPolicy.shouldCancelForWindow("tv.dumbtv.home", "com.netflix.ninja",
+                "com.netflix.ninja.MainActivity", "com.amazon.tv.launcher", "tv.dumbtv.home.Home",
+                "android.view.View"), "another app cancels recovery");
+
         int[] transparent = new int[100];
         check(FocusColor.representative(transparent) == FocusColor.FALLBACK, "transparent fallback");
 
