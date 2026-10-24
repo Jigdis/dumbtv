@@ -2,6 +2,10 @@
 
 A home screen for Fire TV that does one job: show your apps and your HDMI inputs.
 
+The built-in input viewer keeps the display awake while its window is visible,
+including temporary signal loss. Leaving the viewer restores normal idle behavior;
+system sleep settings, HDMI routing and HOME Guard are not changed.
+
 <p align="center">
   <img src="../docs/assets/screens/home.png" alt="dumbtv home: a clock, an Apps row and an Inputs row" width="720">
 </p>

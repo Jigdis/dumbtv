@@ -18,6 +18,7 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -104,6 +105,8 @@ public final class Input extends Activity {
         // The video is a layer behind this window; a transparent window lets the text over it blend
         // instead of punching black boxes into the picture.
         getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        // HDMI viewing has no remote interaction. Only this visible window holds the display awake.
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         FrameLayout root = new FrameLayout(this);
         if (getSystemService(Context.TV_INPUT_SERVICE) != null) {
